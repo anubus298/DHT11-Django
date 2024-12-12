@@ -19,6 +19,9 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
+allowed_hosts_env = os.getenv("ALLOWED_HOSTS")
+csrf_trusted_origins_env = os.getenv("CSRF_TRUSTED_ORIGINS")
 STATIC_URL = "static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
@@ -40,7 +43,7 @@ SIMPLE_JWT = {
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = allowed_hosts_env.split(",") if allowed_hosts_env else []
 
 # Application definition
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
@@ -162,8 +165,6 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
-csrf_trusted_origins_env = os.getenv("CSRF_TRUSTED_ORIGINS")
 
 CORS_ALLOWED_ORIGINS = allowed_origins_env.split(",") if allowed_origins_env else []
 CSRF_TRUSTED_ORIGINS = (
