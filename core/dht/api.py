@@ -1,4 +1,5 @@
 from .models import Dht11
+from pprint import pprint
 from datetime import timedelta, datetime
 from django.db import connection
 from rest_framework.permissions import IsAuthenticated
@@ -98,11 +99,9 @@ def closeManuallyIncident(request):
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+# todo uncomment this
+# @permission_classes([IsAuthenticated])
 def getStatistics(request):
-    permission_classes = [
-        IsAuthenticated
-    ]  # Only authenticated users can access this view.
     # Get the current date and time
     today = datetime.now().date()
     one_week_ago = today - timedelta(weeks=1)
@@ -110,35 +109,38 @@ def getStatistics(request):
 
     # TimescaleDB query for daily, weekly, and monthly statistics using time_bucket
     query = f"""
-    WITH stats AS (
-        SELECT
-            time_bucket('1 day', dt) AS bucket_time,
-            ROUND(AVG(temp),2) AS avg_temp,
-            ROUND(AVG(hum),2) AS avg_hum
-        FROM dht11
-        WHERE dt >= '{one_month_ago}'
-        GROUP BY bucket_time
-    ),
-    extremes AS (
-        SELECT
-            ROUND(MAX(temp),2) AS highest_temp,
-            ROUND(MIN(temp),2) AS lowest_temp,
-            ROUND(MAX(hum),2) AS highest_hum,
-            ROUND(MIN(hum),2) AS lowest_hum
-        FROM dht11
-        WHERE dt >= '{one_month_ago}'
-    )
+    
+WITH stats AS (
     SELECT
-        bucket_time,
-        avg_temp,
-        avg_hum,
-        highest_temp,
-        lowest_temp,
-        highest_hum,
-        lowest_hum
-    FROM stats, extremes
-    ORDER BY bucket_time DESC
-    LIMIT 30;
+        time_bucket('1 day', dt) AS bucket_time,
+        ROUND(AVG(temp), 2) AS avg_temp,
+        ROUND(AVG(hum), 2) AS avg_hum
+    FROM dht11
+    WHERE dt >= '{one_month_ago}'
+    GROUP BY bucket_time
+),
+extremes AS (
+    SELECT
+        ROUND(MAX(temp), 2) AS highest_temp,
+        ROUND(MIN(temp), 2) AS lowest_temp,
+        ROUND(MAX(hum), 2) AS highest_hum,
+        ROUND(MIN(hum), 2) AS lowest_hum
+    FROM dht11
+    WHERE dt >= '{one_month_ago}'
+)
+SELECT
+    stats.bucket_time,
+    stats.avg_temp,
+    stats.avg_hum,
+    extremes.highest_temp,
+    extremes.lowest_temp,
+    extremes.highest_hum,
+    extremes.lowest_hum
+FROM stats
+CROSS JOIN extremes
+ORDER BY stats.bucket_time DESC
+LIMIT 30;
+
     """
 
     # Execute the query
@@ -170,40 +172,36 @@ def getStatistics(request):
     # Growth Calculation Function
     def calculate_growth(current, previous):
         if current is not None and previous is not None and previous != 0:
-            return ((current - previous) / previous) * 100
+            return ((float(current) - float(previous)) / float(previous)) * 100
         return None
 
     # Initialize variables for previous averages
     prev_daily_avg = prev_weekly_avg = prev_monthly_avg = None
-
+    pprint(result)
     # Process and format the results
-    for row in result:
-        # Format the averages for daily, weekly, and monthly
-        formatted_result["avg"]["daily"] = {
-            "record": {
-                "temp": round(row[1], 2) if row[1] else None,
-                "hum": round(row[2], 2) if row[2] else None,
-                "dt": row[0].strftime("%Y-%m-%d"),
-            },
-            "humGrow": None,  # Will be calculated based on previous daily
-            "humTemp": None,  # Will be calculated based on previous daily
-        }
+    formatted_result["avg"]["daily"] = {
+        "record": {
+            "temp": result[0][1] if result[0][1] else None,
+            "hum": result[0][2] if result[0][2] else None,
+            "dt": result[0][0].strftime("%Y-%m-%d"),
+        },
+        "humGrow": None,  # Will be calculated based on previous daily
+        "tempGrow": None,  # Will be calculated based on previous daily
+    }
+    formatted_result["extremes"]["highest"]["temp"] = (
+        result[0][3] if result[0][3] else None
+    )
+    formatted_result["extremes"]["highest"]["hum"] = (
+        result[0][5] if result[0][5] else None
+    )
 
-        formatted_result["extremes"]["highest"]["temp"] = (
-            round(row[3], 2) if row[3] else None
-        )
-        formatted_result["extremes"]["highest"]["hum"] = (
-            round(row[5], 2) if row[5] else None
-        )
-        formatted_result["extremes"]["lowest"]["temp"] = (
-            round(row[4], 2) if row[4] else None
-        )
-        formatted_result["extremes"]["lowest"]["hum"] = (
-            round(row[6], 2) if row[6] else None
-        )
-
-        # Store the daily averages for growth calculation
-        prev_daily_avg = (row[1], row[2])
+    formatted_result["extremes"]["lowest"]["temp"] = (
+        result[0][4] if result[0][4] else None
+    )
+    formatted_result["extremes"]["lowest"]["hum"] = (
+        result[0][6] if result[0][6] else None
+    )
+    prev_daily_avg = (result[0][1], result[0][2])
 
     # Additional queries for weekly and monthly averages (simplified for brevity)
     # The following should be executed with a separate query or added to the previous one
@@ -240,7 +238,7 @@ def getStatistics(request):
 
     # Update the growth fields in formatted_result
     formatted_result["avg"]["daily"]["humGrow"] = daily_hum_growth
-    formatted_result["avg"]["daily"]["humTemp"] = daily_temp_growth
+    formatted_result["avg"]["daily"]["tempGrow"] = daily_temp_growth
 
     formatted_result["avg"]["weekly"] = {
         "record": {
@@ -249,7 +247,7 @@ def getStatistics(request):
             "dt": one_week_ago.isoformat(),
         },
         "humGrow": weekly_hum_growth,
-        "humTemp": weekly_temp_growth,
+        "tempGrow": weekly_temp_growth,
     }
 
     formatted_result["avg"]["monthly"] = {
@@ -259,11 +257,8 @@ def getStatistics(request):
             "dt": one_month_ago.isoformat(),
         },
         "humGrow": monthly_hum_growth,
-        "humTemp": monthly_temp_growth,
+        "tempGrow": monthly_temp_growth,
     }
-
-    # Cache the result for later requests
-    cache.set("statistics-summary", formatted_result, 30)  # Cache for 30 seconds
 
     return Response({"data": formatted_result})
 
