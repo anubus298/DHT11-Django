@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  install-lint-build-push-to-docker:
+  build-push-to-docker:
     runs-on: ubuntu-latest
 
     steps:
