@@ -2,7 +2,7 @@ FROM python:3.10-alpine3.13 AS builder
 WORKDIR /app 
 COPY requirements.txt /app
 
-RUN apt-get update && apk add --update --no-cache \
+RUN apk update && apk add --update --no-cache \
     postgresql-dev \
     libpq-dev \
     gcc \
