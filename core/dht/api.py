@@ -1,5 +1,5 @@
 from .models import Dht11
-from pprint import pprint
+
 from datetime import timedelta, datetime
 from django.db import connection
 from rest_framework.permissions import IsAuthenticated
@@ -99,8 +99,7 @@ def closeManuallyIncident(request):
 
 
 @api_view(["GET"])
-# todo uncomment this
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def getStatistics(request):
     # Get the current date and time
     today = datetime.now().date()
@@ -177,7 +176,6 @@ LIMIT 30;
 
     # Initialize variables for previous averages
     prev_daily_avg = prev_weekly_avg = prev_monthly_avg = None
-    pprint(result)
     # Process and format the results
     formatted_result["avg"]["daily"] = {
         "record": {
