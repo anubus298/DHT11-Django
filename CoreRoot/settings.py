@@ -114,7 +114,8 @@ DATABASES = {
         "HOST": os.getenv("POSTGRES_HOST"),
         "PORT": os.getenv("POSTGRES_PORT"),
         "OPTIONS": {
-            "sslmode": "require",  # This ensures SSL connection
+            "sslmode": "require",
+            "options": f'endpoint={str(os.getenv("POSTGRES_ENDPOINT_ID"))}',
         },
     }
 }
