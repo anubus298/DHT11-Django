@@ -44,13 +44,13 @@ def handle_incident(temp, hum):
         # create a new incident
         # create a title var and should be low/high temperatur and low/high humidty based on the params
         description = ""
-        if temp < 20:
+        if float(temp) < 20:
             description += "Low Temperature"
-        elif temp > 32:
+        elif float(temp) > 32:
             description += "High Temperature"
-        if hum < 30:
+        if float(hum) < 30:
             description += "Low Humidity"
-        elif hum > 70:
+        elif float(hum) > 70:
             description += "High Humidity"
 
         # if description length > 0 create the incident
