@@ -32,7 +32,7 @@ def send_telegram_message(message):
 
 def send_sms(message):
     account_sid = "AC25f1c5afee965cd8ca9b1ffcbfbf050b"
-    auth_token = "8b896ac78071ec15f7669f55f8928b18"
+    auth_token = "cf916dc56b1d37926354c18b13e1bc77"
     client = Client(account_sid, auth_token)
     message = client.messages.create(
         from_="+15732276099", body=message, to="+212766113470"
