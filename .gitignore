@@ -130,5 +130,5 @@ dmypy.json
 
 #ignore staticfiles
 staticfiles/
-
+local.env
 /migration

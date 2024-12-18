@@ -18,6 +18,8 @@ from rest_framework.response import Response
 from django.conf import settings
 import requests
 
+from twilio.rest import Client
+
 
 def send_telegram_message(message):
     token = settings.TELEGRAM_BOT_AUTH_TOKEN
@@ -26,6 +28,15 @@ def send_telegram_message(message):
     payload = {"chat_id": chat_id, "text": message}
     response = requests.post(url, data=payload)
     return response
+
+
+def send_sms(message):
+    account_sid = "AC25f1c5afee965cd8ca9b1ffcbfbf050b"
+    auth_token = "8b896ac78071ec15f7669f55f8928b18"
+    client = Client(account_sid, auth_token)
+    message = client.messages.create(
+        from_="+15732276099", body=message, to="+212766113470"
+    )
 
 
 def handle_incident(temp, hum):
@@ -62,6 +73,9 @@ def handle_incident(temp, hum):
                 humidity=hum,
             )
             # send a telegram message
+            send_sms(
+                f"An incident has been detected {temp}°C {hum}% , please check the app for more details"
+            )
             send_telegram_message(
                 f"An incident has been detected {temp}°C {hum}% , please check the app for more details"
             )
