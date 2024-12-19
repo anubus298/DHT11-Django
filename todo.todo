@@ -1,0 +1,7 @@
+- add incident column  : closed at
+- add 2 charts for temp and hum
+- add forget password/change mail/password pages
+- add management page (for only the admin) to manage users(add,delete ,change username) , for managing backend credentiels (sms/telegram number,temp & hum treshhold ) and another page for the db tables
+- add logic to only open incident after COUNT number of sequentiel temp/hum threshhold
+- change the max/min to the max & min of today
+- add CSV button to download csv file of the data

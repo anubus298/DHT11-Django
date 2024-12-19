@@ -34,4 +34,7 @@ urlpatterns = [
         viewsets.getIncidentNoteByIncidentId,
         name="by_incident_id",
     ),
+    path(
+        "", include("core.notifications.urls")
+    ),  # Replace 'your_app_name' with your app's name
 ]

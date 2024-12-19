@@ -27,6 +27,16 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 TELEGRAM_BOT_AUTH_TOKEN = os.getenv("TELEGRAM_BOT_AUTH_TOKEN")
+
+TWILLIO_SID = os.getenv("TWILLIO_SID")
+TWILLIO_AUTH_TOKEN = os.getenv("TWILLIO_AUTH_TOKEN")
+
+SMTP_HOST = os.getenv("SMTP_HOST")
+SMTP_PORT = os.getenv("SMTP_PORT")
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+
+
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # Quick-start development settings - unsuitable for production
@@ -61,6 +71,7 @@ INSTALLED_APPS = [
     "core.user",
     "core.dht",
     "core.incident",
+    "core.notifications",
     "django_cron",
 ]
 

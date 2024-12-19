@@ -6,7 +6,7 @@ from core.auth.viewsets import (
     RefreshViewSet,
 )
 from core.incident.viewsets import IncidentViewSet, IncidentNoteViewSet
-
+from core.notifications.views import AddNotificationParameterView
 
 routes = SimpleRouter()
 
@@ -14,6 +14,7 @@ routes = SimpleRouter()
 routes.register(r"login", LoginViewSet, basename="auth-login")
 routes.register(r"register", RegistrationViewSet, basename="auth-register")
 routes.register(r"refresh", RefreshViewSet, basename="auth-refresh")
+
 
 # USER
 routes.register(r"users", UserViewSet, basename="users")

@@ -1,10 +1,12 @@
 from .models import Dht11
-
+from core.notifications.models import NotificationsParameters, NotificationType
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from datetime import timedelta, datetime
 from django.db import connection
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
-
 from django.core.cache import cache
 import requests
 from django.db.models import Avg
@@ -31,12 +33,68 @@ def send_telegram_message(message):
 
 
 def send_sms(message):
-    account_sid = "AC25f1c5afee965cd8ca9b1ffcbfbf050b"
-    auth_token = "cf916dc56b1d37926354c18b13e1bc77"
-    client = Client(account_sid, auth_token)
-    message = client.messages.create(
-        from_="+15732276099", body=message, to="+212766113470"
-    )
+    client = Client(settings.TWILLIO_SID, settings.TWILLIO_AUTH_TOKEN)
+    sms_users = NotificationsParameters.objects.filter(type=NotificationType.SMS)
+    for user in sms_users:
+        try:
+            client.messages.create(
+                from_="+15732276099",
+                body=message,
+                to=user.mainResource,  # Assuming mainResource holds the phone number
+            )
+            print(f"Message sent to {user.mainResource}")
+        except Exception as e:
+            print(f"Failed to send message to {user.mainResource}: {e}")
+            continue
+
+
+def send_email(subject, body, to_email):
+    # SMTP server configuration
+    smtp_server = settings.SMTP_HOST
+    smtp_port = settings.SMTP_PORT
+    sender_email = settings.SENDER_EMAIL
+    sender_password = settings.SMTP_PASSWORD
+
+    # Create the message
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = to_email
+    message["Subject"] = subject
+
+    # Add body to the email
+    message.attach(MIMEText(body, "plain"))
+
+    try:
+        # Connect to the SMTP server
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()  # Start TLS encryption
+        server.login(sender_email, sender_password)
+
+        # Send email
+        text = message.as_string()
+        server.sendmail(sender_email, to_email, text)
+        print("Email sent successfully!")
+
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+
+    finally:
+        server.quit()
+
+
+def handle_messages_sending(message):
+    emails_users = NotificationsParameters.objects.filter(type=NotificationType.EMAIL)
+    for user in emails_users:
+        try:
+            send_email(
+                subject="incident report",
+                body=message,
+                to_email=user.mainResource,  # Assuming mainResource holds the phone number
+            )
+            print(f"Email sent to {user.mainResource}")
+        except Exception as e:
+            print(f"Failed to send email to {user.mainResource}: {e}")
+            continue
 
 
 def handle_incident(temp, hum):
@@ -56,28 +114,31 @@ def handle_incident(temp, hum):
         # create a title var and should be low/high temperatur and low/high humidty based on the params
         description = ""
         if float(temp) < 20:
-            description += "Low Temperature"
+            description += "Basse Température"
         elif float(temp) > 32:
-            description += "High Temperature"
+            description += "Haute Température"
         if float(hum) < 30:
-            description += "Low Humidity"
+            description += "Faible Humidité"
         elif float(hum) > 70:
-            description += "High Humidity"
+            description += "Haute Humidité"
 
         # if description length > 0 create the incident
         if len(description) > 0:
             Incident.objects.create(
-                title="An incident has been detected",
+                title="Un incident a été détecté",
                 description=description,
                 temperature=temp,
                 humidity=hum,
             )
-            # send a telegram message
-            send_sms(
-                f"An incident has been detected {temp}°C {hum}% , please check the app for more details"
-            )
+            # send a telegram message disabled for testing
+            # send_sms(
+            #     f"Un incident a été détecté {temp}°C {hum}%, veuillez vérifier l'application pour plus de détails"
+            # )
             send_telegram_message(
-                f"An incident has been detected {temp}°C {hum}% , please check the app for more details"
+                f"Un incident a été détecté {temp}°C {hum}%, veuillez vérifier l'application pour plus de détails"
+            )
+            handle_messages_sending(
+                f"Un incident a été détecté {temp}°C {hum}%, veuillez vérifier l'application pour plus de détails"
             )
 
 
