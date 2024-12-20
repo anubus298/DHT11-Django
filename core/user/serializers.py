@@ -14,5 +14,6 @@ class UserSerializer(serializers.ModelSerializer):
             "created",
             "updated",
             "is_staff",
+            "is_active"
         ]
-        read_only_field = ["is_active", "created", "updated"]
+        read_only_field = [ "created", "updated"]
