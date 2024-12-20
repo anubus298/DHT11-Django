@@ -1,12 +1,13 @@
 from rest_framework import serializers, status
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from rest_framework.decorators import action
 from core.user.models import User
 from core.user.serializers import UserSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import viewsets
 from rest_framework import filters
-
+from core.apps import BACKEND_VERSION
 
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "put", "patch", "delete"]  # Allow PUT, PATCH, DELETE
@@ -81,3 +82,11 @@ class CurrentUserViewSet(viewsets.ViewSet):
     def current_user(self, request):
         serializer = UserSerializer(request.user)
         return Response({"data": serializer.data})
+
+
+
+@api_view(["GET"])
+def return_version(request):
+    return Response({"data": {
+        "version" : BACKEND_VERSION
+    } })

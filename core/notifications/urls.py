@@ -5,8 +5,13 @@ from .views import (
     DeleteNotificationParameterView,
     NotificationsParametersListView,
 )
-
+from core.user.viewsets import return_version
 urlpatterns = [
+    path(
+        "version/",
+         return_version,
+        name="backend-version",         
+         ),
     path(
         "notifications/add/",
         AddNotificationParameterView.as_view(),

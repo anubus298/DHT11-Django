@@ -73,7 +73,6 @@ INSTALLED_APPS = [
     "core.incident",
     "core.notifications",
     "core.counter",
-
     "django_cron",
 ]
 
@@ -81,6 +80,7 @@ CRON_CLASSES = [
     "core.cron.MyCronJob",
     # ...
 ]
+
 
 AUTH_USER_MODEL = "core_user.User"
 
