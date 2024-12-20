@@ -18,9 +18,29 @@ from rest_framework.decorators import api_view
 from rest_framework import status, generics
 from rest_framework.response import Response
 from django.conf import settings
+from core.counter.models import Counter,Parameter
 import requests
 
 from twilio.rest import Client
+
+def is_reportable():
+    current_counter = Counter.objects.first()
+    counter_treshhold = Parameter.objects.filter(type="COUNTER_TRESHHOLD").first()
+    if current_counter is None:
+        Counter.objects.create(value=1)
+        #log here the info:
+        print("Counter created")
+        return False    
+    elif current_counter.value >= counter_treshhold.value:
+        current_counter.value = 0
+        current_counter.save()
+        print("Counter reset")
+        return True
+    else :
+        current_counter.value += 1
+        current_counter.save()
+        print("Counter incremented" + str(current_counter.value))
+        return False
 
 
 def send_telegram_message(message):
@@ -110,36 +130,40 @@ def handle_incident(temp, hum):
         incident.save()
         print("incident updated")
     else:
-        # create a new incident
-        # create a title var and should be low/high temperatur and low/high humidty based on the params
+        max_temp = Parameter.objects.filter(type="TEMP_MAX").first()
+        min_temp = Parameter.objects.filter(type="TEMP_MIN").first()
+        max_hum = Parameter.objects.filter(type="HUM_MAX").first()
+        min_hum = Parameter.objects.filter(type="HUM_MIN").first()
         description = ""
-        if float(temp) < 20:
+        if float(temp) < min_temp.value:
             description += "Basse Température"
-        elif float(temp) > 32:
+        elif float(temp) > max_temp.value:
             description += "Haute Température"
-        if float(hum) < 30:
+        if float(hum) < min_hum.value:
             description += "Faible Humidité"
-        elif float(hum) > 70:
+        elif float(hum) > max_hum.value:
             description += "Haute Humidité"
 
         # if description length > 0 create the incident
         if len(description) > 0:
-            Incident.objects.create(
+            if is_reportable():
+                Incident.objects.create(
                 title="Un incident a été détecté",
                 description=description,
                 temperature=temp,
                 humidity=hum,
-            )
-            # send a telegram message disabled for testing
-            # send_sms(
-            #     f"Un incident a été détecté {temp}°C {hum}%, veuillez vérifier l'application pour plus de détails"
-            # )
-            send_telegram_message(
-                f"Un incident a été détecté {temp}°C {hum}%, veuillez vérifier l'application pour plus de détails"
-            )
-            handle_messages_sending(
-                f"Un incident a été détecté {temp}°C {hum}%, veuillez vérifier l'application pour plus de détails"
-            )
+                )
+                # send a telegram message disabled for testing
+                # send_sms(
+                #     f"Un incident a été détecté {temp}°C {hum}%, veuillez vérifier l'application pour plus de détails"
+                # )
+                send_telegram_message(
+                    f"Un incident a été détecté {temp}°C {hum}%, veuillez vérifier l'application pour plus de détails"
+                )
+                handle_messages_sending(
+                    f"Un incident a été détecté {temp}°C {hum}%, veuillez vérifier l'application pour plus de détails"
+                )
+            
 
 
 @api_view(["POST"])

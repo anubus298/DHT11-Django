@@ -72,6 +72,8 @@ INSTALLED_APPS = [
     "core.dht",
     "core.incident",
     "core.notifications",
+    "core.counter",
+
     "django_cron",
 ]
 

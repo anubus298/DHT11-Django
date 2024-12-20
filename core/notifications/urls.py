@@ -1,4 +1,5 @@
 from django.urls import path
+from core.counter.views import ParameterUpdateView
 from .views import (
     AddNotificationParameterView,
     DeleteNotificationParameterView,
@@ -21,4 +22,6 @@ urlpatterns = [
         NotificationsParametersListView.as_view(),
         name="list_notifications",
     ),
+    path('parameters/<str:type>/', ParameterUpdateView.as_view(), name='update-parameter'),    
+    path('parameters/', ParameterUpdateView.as_view(), name='list-parameters'),
 ]

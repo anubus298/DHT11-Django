@@ -11,7 +11,7 @@ from rest_framework import filters
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "put", "patch", "delete"]  # Allow PUT, PATCH, DELETE
     serializer_class = UserSerializer
-    permission_classes = (IsAuthenticated, IsAdminUser)  # Only admin can delete or update
+    permission_classes = ( IsAdminUser,)  # Only admin can delete or update
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["updated"]
     ordering = ["-updated"]

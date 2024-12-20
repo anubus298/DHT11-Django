@@ -6,7 +6,7 @@ from core.auth.viewsets import (
     RefreshViewSet,
 )
 from core.incident.viewsets import IncidentViewSet, IncidentNoteViewSet
-from core.notifications.views import AddNotificationParameterView
+
 
 routes = SimpleRouter()
 
@@ -22,5 +22,6 @@ routes.register(r"current-user", CurrentUserViewSet, basename="current-user")
 
 routes.register(r"incidents", IncidentViewSet, basename="incident")
 routes.register(r"incident-notes", IncidentNoteViewSet, basename="incident-notes")
+
 
 urlpatterns = [*routes.urls]
