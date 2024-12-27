@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install some dependencies
-sudo apt-get update && sudo apt-get install -y \
+apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
     libffi-dev \
