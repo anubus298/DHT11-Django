@@ -22,11 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/' 
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
 allowed_hosts_env = os.getenv("ALLOWED_HOSTS")
 csrf_trusted_origins_env = os.getenv("CSRF_TRUSTED_ORIGINS")
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 
 TELEGRAM_BOT_AUTH_TOKEN = os.getenv("TELEGRAM_BOT_AUTH_TOKEN")

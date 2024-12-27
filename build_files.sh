@@ -7,4 +7,5 @@ python3 -m pip install setuptools
 python3 -m pip install -r requirements.txt
 echo "Make Migration..."
 echo "Collect Static..."
+mkdir static
 python3 manage.py collectstatic --noinput --clear
