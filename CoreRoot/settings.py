@@ -22,9 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
 allowed_hosts_env = os.getenv("ALLOWED_HOSTS")
 csrf_trusted_origins_env = os.getenv("CSRF_TRUSTED_ORIGINS")
-STATIC_URL = "static/"
+
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
 
 TELEGRAM_BOT_AUTH_TOKEN = os.getenv("TELEGRAM_BOT_AUTH_TOKEN")
 
@@ -83,9 +83,10 @@ CRON_CLASSES = [
 
 
 AUTH_USER_MODEL = "core_user.User"
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -170,7 +171,8 @@ USE_TZ = True
 
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = "/static/"
+STATIC_URL = '/static/' 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
