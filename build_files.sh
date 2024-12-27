@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # Install some dependencies
-apk add --update --no-cache \
-    alpine-sdk \
-    postgresql-dev \
-    libffi-dev
+sudo apt-get update && sudo apt-get install -y \
+    build-essential \
+    libpq-dev \
+    libffi-dev \
+    python3-pip
 
 # Install Python dependencies
 python3 -m pip install -r requirements.txt
