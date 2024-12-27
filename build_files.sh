@@ -3,7 +3,7 @@ echo "Installing pip if required..."
 python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade pip
 echo "Building the project..."
-pip install --upgrade setuptools wheel
+python3 -m pip install setuptools wheel
 python3 -m pip install -r requirements.txt
 echo "Make Migration..."
 echo "Collect Static..."
