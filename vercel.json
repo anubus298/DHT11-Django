@@ -1,7 +1,7 @@
 {
   "builds": [
     {
-      "src": "backend/wsgi.py",
+      "src": "CoreRoot/asgi.py",
       "use": "@vercel/python"
     },
     {
