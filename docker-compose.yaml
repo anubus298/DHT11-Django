@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  reverse-proxy:
+    image: traefik:v3.0
+    container_name: traefik
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --certificatesresolvers.myresolver.acme.httpchallenge=true
+      - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.myresolver.acme.email=${EMAIL}
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+      - --entrypoints.web.transport.respondingTimeouts.readTimeout=1800s
+      - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=1800s
+      - --log.level=INFO
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certificates:/letsencrypt
+    networks:
+      - proxy
+    restart: unless-stopped
+
+  dht:
+    image: anubus298/dht-backend:latest
+    container_name: dht
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dht.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.dht.entrypoints=websecure"
+      - "traefik.http.routers.dht.tls.certresolver=myresolver"
+      - "traefik.http.services.dht.loadbalancer.server.port=80"
+    networks:
+      - proxy
+    expose:
+      - 80
+    restart: unless-stopped
+    depends_on:
+      - reverse-proxy
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --label-enable --cleanup --interval 300
+    restart: unless-stopped
+
+volumes:
+  traefik-certificates:
+  dht-data:
+
+networks:
+  proxy:
+    external: false
